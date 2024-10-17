@@ -1,4 +1,6 @@
+import 'package:counter_app/user_notifier.dart';
 import 'package:flutter/material.dart';
+import 'package:go_router/go_router.dart';
 
 class HomePage extends StatefulWidget {
   const HomePage({
@@ -26,6 +28,8 @@ class _HomePageState extends State<HomePage> {
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: <Widget>[
+            const _UserContainer(),
+            const SizedBox(height: 20),
             const Text(
               'You have pushed the button this many times:',
             ),
@@ -49,5 +53,42 @@ class _HomePageState extends State<HomePage> {
     setState(() {
       _counter++;
     });
+  }
+}
+
+class _UserContainer extends StatelessWidget {
+  const _UserContainer();
+
+  @override
+  Widget build(BuildContext context) {
+    return ListenableBuilder(
+      listenable: userNotifier,
+      builder: (context, _) {
+        return Container(
+          decoration: BoxDecoration(
+            border: Border.all(),
+            borderRadius: BorderRadius.circular(16),
+          ),
+          padding: const EdgeInsets.all(20),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Text('Email: ${userNotifier.email}'),
+              const SizedBox(height: 8),
+              if (userNotifier.isSignedIn)
+                FilledButton(
+                  onPressed: () => userNotifier.email = null,
+                  child: const Text('Logout'),
+                )
+              else
+                FilledButton(
+                  onPressed: () => GoRouter.of(context).go('/login'),
+                  child: const Text('Login'),
+                )
+            ],
+          ),
+        );
+      },
+    );
   }
 }
