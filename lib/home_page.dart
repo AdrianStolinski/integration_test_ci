@@ -41,7 +41,7 @@ class _HomePageState extends State<HomePage> {
         ),
       ),
       floatingActionButton: FloatingActionButton(
-        key: const ValueKey('increment'),
+        key: const ValueKey('IncrementFab'),
         onPressed: _incrementCounter,
         tooltip: 'Increment',
         child: const Icon(Icons.add),
@@ -77,11 +77,13 @@ class _UserContainer extends StatelessWidget {
               const SizedBox(height: 8),
               if (userNotifier.isSignedIn)
                 FilledButton(
+                  key: const ValueKey('LogoutBtn'),
                   onPressed: () => userNotifier.email = null,
                   child: const Text('Logout'),
                 )
               else
                 FilledButton(
+                  key: const ValueKey('LoginBtn'),
                   onPressed: () => GoRouter.of(context).go('/login'),
                   child: const Text('Login'),
                 )

@@ -35,6 +35,7 @@ class _LoginPageState extends State<LoginPage> {
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
             TextFormField(
+              key: const ValueKey('EmailsTF'),
               controller: emailController,
               decoration: const InputDecoration(
                 labelText: 'Email',
@@ -42,6 +43,7 @@ class _LoginPageState extends State<LoginPage> {
             ),
             const SizedBox(height: 8),
             TextFormField(
+              key: const ValueKey('PasswordTF'),
               controller: passwordController,
               decoration: const InputDecoration(
                 labelText: 'Password',
@@ -59,6 +61,7 @@ class _LoginPageState extends State<LoginPage> {
                 final isEnabled = email.isNotEmpty && password.isNotEmpty;
 
                 return FilledButton(
+                  key: const ValueKey('LoginBtn'),
                   onPressed: isEnabled
                       ? () {
                           userNotifier.email = emailController.text;
