@@ -3,30 +3,30 @@ import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 void main() {
-  testWidgets('Login and Logout test',
+  testWidgets('Login and Logout test with keys',
       (WidgetTester tester) async {
 
-    // Start the app
+    // Start the app.
     await tester.pumpWidget(const App());
     await tester.pumpAndSettle();
 
     // Verify the Login button is shown
-    expect(find.widgetWithText(FilledButton, 'Login'), findsOneWidget);
+    expect(find.byKey(const ValueKey('LoginBtn')), findsOneWidget);
 
     // Tap on the Login button
-    await tester.tap(find.text('Login'));
+    await tester.tap(find.byKey(const ValueKey('LoginBtn')));
     await tester.pumpAndSettle();
 
-    // Verify that the Email and Password fields are displayed on login_page
-    expect(find.text('Email'), findsOneWidget);
-    expect(find.text('Password'), findsOneWidget);
+    // Verify that the Email and Password fields are displayed on the login page
+    expect(find.byKey(const ValueKey('EmailsTF')), findsOneWidget);
+    expect(find.byKey(const ValueKey('PasswordTF')), findsOneWidget);
 
     // Enter text in the Email field
-    await tester.enterText(find.byType(TextField).at(0), 'test@test.fdt');
+    await tester.enterText(find.byKey(const ValueKey('EmailsTF')), 'test@test.fdt');
     await tester.pumpAndSettle();
 
     // Enter text in the Password field
-    await tester.enterText(find.byType(TextField).at(1), 'qwerty');
+    await tester.enterText(find.byKey(const ValueKey('PasswordTF')), 'qwerty');
     await tester.pumpAndSettle();
 
     // Confirm typed text
@@ -39,7 +39,7 @@ void main() {
 
     // Verify that the Login button is now enabled. Additional precaution to avoid false test failing.
     final Finder loginButtonIsActive =
-        find.widgetWithText(FilledButton, 'Login');
+        find.byKey(const ValueKey('LoginBtn'));
     expect(loginButtonIsActive, findsOneWidget);
     expect(
       tester.widget<FilledButton>(loginButtonIsActive).onPressed,
@@ -51,15 +51,15 @@ void main() {
     await tester.pumpAndSettle();
 
     // Verify the Logout button is shown
-    expect(find.widgetWithText(FilledButton, 'Logout'), findsOneWidget);
+    expect(find.byKey(const ValueKey('LogoutBtn')), findsOneWidget);
 
-    // Verify the correct user is logon
+    // Verify the correct user is logged in
     expect(find.text('Email: test@test.fdt'), findsOneWidget);
     await tester.pumpAndSettle();
 
     // Verify that the Logout button is now enabled. Additional precaution to avoid false test failing.
     final Finder logoutButtonIsActive =
-        find.widgetWithText(FilledButton, 'Logout');
+        find.byKey(const ValueKey('LogoutBtn'));
     expect(logoutButtonIsActive, findsOneWidget);
     expect(
       tester.widget<FilledButton>(logoutButtonIsActive).onPressed,
@@ -70,7 +70,7 @@ void main() {
     await tester.tap(logoutButtonIsActive);
     await tester.pumpAndSettle();
 
-    // Verify the user is logout
-    expect(find.widgetWithText(FilledButton, 'Login'), findsOneWidget);
+    // Verify the user is logged out
+    expect(find.byKey(const ValueKey('LoginBtn')), findsOneWidget);
   });
 }
