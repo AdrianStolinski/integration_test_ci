@@ -1,0 +1,164 @@
+name: Analyze and test
+
+on:
+  push:
+    branches:
+      - master
+  pull_request:
+    types: [ opened, labeled, unlabeled, synchronize ]
+
+env:
+  ANDROID_API_LEVEL: 31
+  IPHONE_DEVICE: "iPhone 15 Pro Max"
+
+jobs:
+  android:
+    name: Build Android
+    runs-on: macOS-latest
+
+    permissions:
+      contents: read # For EnricoMi/publish-unit-test-result-action
+      issues: read # For EnricoMi/publish-unit-test-result-action
+      checks: write # For EnricoMi/publish-unit-test-result-action
+      pull-requests: write # For EnricoMi/publish-unit-test-result-action
+
+    steps:
+      - name: Checkout Project
+        uses: actions/checkout@v4
+
+      #      - name: Enable KVM group perms
+      #        run: |
+      #          echo 'KERNEL=="kvm", GROUP="kvm", MODE="0666", OPTIONS+="static_node=kvm"' | sudo tee /etc/udev/rules.d/99-kvm4all.rules
+      #          sudo udevadm control --reload-rules
+      #          sudo udevadm trigger --name-match=kvm
+
+      - name: Configure Flutter
+        uses: subosito/flutter-action@v2
+        with:
+          channel: stable
+          cache: true
+
+      - name: Run Analyzer
+        run: flutter analyze
+
+      - name: Run Android Android Unit Tests
+        run: |
+          flutter test --coverage \
+            --test-randomize-ordering-seed=random \
+            --file-reporter json:build/android/reports/unit-test-results.json
+
+      - name: Publish Android Unit Test Report
+        uses: EnricoMi/publish-unit-test-result-action/macos@v2
+        if: always()
+        with:
+          check_name: "Android Unit Test Results"
+          files: |
+            build/android/reports/unit-test-results.json
+
+      - name: Cache AVD
+        uses: actions/checkout@v4
+        id: avd-cache
+        with:
+          path: |
+            ~/.android/avd/*
+            ~/.android/adb*
+          key: avd-${{ env.ANDROID_API_LEVEL }}
+
+      - name: Create AVD and generate snapshot for caching
+        if: steps.avd-cache.outputs.cache-hit != 'true'
+        uses: reactivecircus/android-emulator-runner@v2
+        with:
+          api-level: ${{ env.ANDROID_API_LEVEL }}
+          arch: arm64-v8a
+          force-avd-creation: false
+          emulator-options: -no-window -gpu swiftshader_indirect -noaudio -no-boot-anim -camera-back none -no-accel
+          emulator-boot-timeout: 1200
+          disable-animations: false
+          script: echo "Generated AVD snapshot for caching."
+
+      - name: Run Android Integration Tests on Android API ${{ env.ANDROID_API_LEVEL }}
+        uses: reactivecircus/android-emulator-runner@v2
+        with:
+          api-level: ${{ env.ANDROID_API_LEVEL }}
+          arch: arm64-v8a
+          force-avd-creation: false
+          emulator-options: -no-window -gpu swiftshader_indirect -noaudio -no-boot-anim -camera-back none -no-snapshot-save -no-accel
+          emulator-boot-timeout: 1200
+          disable-animations: true
+          script: flutter test integration_test --coverage --test-randomize-ordering-seed=random --file-reporter json:build/reports/android/integration-test-results.json
+
+      - name: Publish Android Integration Test Report
+        uses: EnricoMi/publish-unit-test-result-action/macos@v2
+        if: always()
+        with:
+          check_name: "Android Integration Test Results"
+          files: |
+            build/reports/android/integration-test-results.json
+
+  ios:
+    name: Build iOS
+    runs-on: macos-latest
+
+    permissions:
+      contents: read # For EnricoMi/publish-unit-test-result-action
+      issues: read # For EnricoMi/publish-unit-test-result-action
+      checks: write # For EnricoMi/publish-unit-test-result-action
+      pull-requests: write # For EnricoMi/publish-unit-test-result-action
+
+    steps:
+      - name: Checkout Project
+        uses: actions/checkout@v4
+
+      - name: Cache iOS Dependencies
+        uses: actions/cache@v4
+        with:
+          path: |
+            ios/Pods
+            /opt/hostedtoolcache/flutter
+            /Users/runner/hostedtoolcache/flutter
+            /Users/runner/.pub-cache
+          key: ${{ runner.os }}-build
+          restore-keys: |
+            ${{ runner.os }}-build
+
+      - name: Configure Flutter
+        uses: subosito/flutter-action@v2
+        with:
+          channel: stable
+          cache: true
+
+      - name: Run iOS Unit Tests
+        run: |
+          flutter test --coverage \
+            --test-randomize-ordering-seed=random \
+            --file-reporter json:build/ios/reports/unit-test-results.json
+
+      - name: Publish iOS Unit Test Report
+        uses: EnricoMi/publish-unit-test-result-action/macos@v2
+        if: always()
+        with:
+          check_name: "iOS Unit Test Results"
+          files: |
+            build/ios/reports/unit-test-results.json
+
+      - name: Run iOS Integration Tests on ${{ env.IPHONE_DEVICE }} Simulator
+        run: |
+          UDID=$(
+            xcrun xctrace list devices 2>&1 |
+            grep -m 1 "${{ env.IPHONE_DEVICE }}" |
+            awk -F'[()]' '{ print $4 }'
+          )
+          echo $UDID
+          xcrun simctl boot "${UDID:?No Simulator with this name found}"
+          flutter test integration_test --coverage --test-randomize-ordering-seed=random --file-reporter json:build/reports/ios/integration-test-results.json
+
+      - name: Publish iOS Integration Test Report
+        uses: EnricoMi/publish-unit-test-result-action/macos@v2
+        if: always()
+        with:
+          check_name: "iOS Integration Test Results"
+          files: |
+            build/reports/ios/integration-test-results.json
+
+      - name: Shutdown all iOS Simulators
+        run: xcrun simctl shutdown all
