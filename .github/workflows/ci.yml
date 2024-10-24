@@ -8,13 +8,15 @@ on:
     types: [ opened, labeled, unlabeled, synchronize ]
 
 env:
+  GRADLE_OPTS: -Dorg.gradle.daemon=false -Dorg.gradle.configureondemand=true -Dkotlin.incremental=false -Dorg.gradle.jvmargs="-Xmx4g -Xms128m -XX:+HeapDumpOnOutOfMemoryError -Dfile.encoding=UTF-8 -XX:MaxMetaspaceSize=1024m"
+  JAVA_VERSION: 17
   ANDROID_API_LEVEL: 23
   IPHONE_DEVICE: "iPhone 15 Pro Max"
 
 jobs:
   android:
     name: Build Android
-    runs-on: ubuntu-22.04
+    runs-on: ubuntu-latest
 
     permissions:
       contents: read # For EnricoMi/publish-unit-test-result-action
@@ -38,6 +40,16 @@ jobs:
           channel: stable
           cache: true
 
+      - name: Configure JDK ${{ env.JAVA_VERSION }}
+        uses: actions/setup-java@v4.2.2
+        with:
+          distribution: temurin
+          java-version: ${{ env.JAVA_VERSION }}
+          cache: gradle
+
+      - name: Setup Gradle
+        uses: gradle/actions/setup-gradle@v4.1.0
+
       - name: Run Analyzer
         run: flutter analyze
 
@@ -55,11 +67,6 @@ jobs:
           files: |
             build/android/reports/unit-test-results.json
 
-      - uses: actions/setup-java@v4
-        with:
-          distribution: 'zulu'
-          java-version: 23
-
       - name: Cache AVD
         uses: actions/checkout@v4
         id: avd-cache
@@ -69,15 +76,13 @@ jobs:
             ~/.android/adb*
           key: avd-${{ env.ANDROID_API_LEVEL }}
 
-      - uses: gradle/actions/setup-gradle@v4
-
       - name: Create AVD and generate snapshot for caching
         if: steps.avd-cache.outputs.cache-hit != 'true'
         uses: reactivecircus/android-emulator-runner@v2
         with:
           api-level: ${{ env.ANDROID_API_LEVEL }}
           force-avd-creation: false
-          emulator-options: -no-window -gpu swiftshader_indirect -noaudio -no-boot-anim -camera-back none -no-accel
+          emulator-options: -no-window -gpu swiftshader_indirect -noaudio -no-boot-anim -camera-back none
           emulator-boot-timeout: 1200
           disable-animations: false
           script: echo "Generated AVD snapshot for caching."
