@@ -8,13 +8,13 @@ on:
     types: [ opened, labeled, unlabeled, synchronize ]
 
 env:
-  ANDROID_API_LEVEL: 31
+  ANDROID_API_LEVEL: 23
   IPHONE_DEVICE: "iPhone 15 Pro Max"
 
 jobs:
   android:
     name: Build Android
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-22.04
 
     permissions:
       contents: read # For EnricoMi/publish-unit-test-result-action
@@ -55,6 +55,11 @@ jobs:
           files: |
             build/android/reports/unit-test-results.json
 
+      - uses: actions/setup-java@v4
+        with:
+          distribution: 'zulu'
+          java-version: 23
+
       - name: Cache AVD
         uses: actions/checkout@v4
         id: avd-cache
@@ -63,6 +68,8 @@ jobs:
             ~/.android/avd/*
             ~/.android/adb*
           key: avd-${{ env.ANDROID_API_LEVEL }}
+
+      - uses: gradle/actions/setup-gradle@v4
 
       - name: Create AVD and generate snapshot for caching
         if: steps.avd-cache.outputs.cache-hit != 'true'
