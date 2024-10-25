@@ -10,7 +10,7 @@ on:
 env:
   GRADLE_OPTS: -Dorg.gradle.daemon=false -Dorg.gradle.configureondemand=true -Dkotlin.incremental=false -Dorg.gradle.jvmargs="-Xmx4g -Xms128m -XX:+HeapDumpOnOutOfMemoryError -Dfile.encoding=UTF-8 -XX:MaxMetaspaceSize=1024m"
   JAVA_VERSION: 17
-  ANDROID_API_LEVEL: 29
+  ANDROID_API_LEVEL: 31
   IPHONE_DEVICE: "iPhone 15 Pro Max"
 
 jobs:
