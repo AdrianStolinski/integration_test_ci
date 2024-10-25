@@ -17,10 +17,6 @@ jobs:
   android:
     name: Build Android
     runs-on: ubuntu-latest
-    strategy:
-      matrix:
-        api-level: [ 29, 31, 33 ]
-        target: [ default, google_apis ]
 
     permissions:
       contents: read # For EnricoMi/publish-unit-test-result-action
@@ -63,6 +59,12 @@ jobs:
             --test-randomize-ordering-seed=random \
             --file-reporter json:build/android/reports/unit-test-results.json
 
+      - name: Upload Android Unit Test Report Artifact
+        uses: actions/upload-artifact@v3
+        with:
+          name: android-unit-test-report
+          path: build/android/reports/unit-test-results.json
+
       - name: Publish Android Unit Test Report
         uses: EnricoMi/publish-unit-test-result-action@v2
         if: always()
@@ -78,13 +80,13 @@ jobs:
           path: |
             ~/.android/avd/*
             ~/.android/adb*
-          key: avd-${{ matrix.api-level }}
+          key: avd-${{ env.ANDROID_API_LEVEL }}
 
       - name: Create AVD and generate snapshot for caching
         if: steps.avd-cache.outputs.cache-hit != 'true'
         uses: reactivecircus/android-emulator-runner@v2
         with:
-          api-level: ${{ matrix.api-level }}
+          api-level: ${{ env.ANDROID_API_LEVEL }}
           force-avd-creation: false
           emulator-options: -no-window -gpu swiftshader -noaudio -no-boot-anim -camera-back none
           emulator-boot-timeout: 1200
@@ -93,10 +95,10 @@ jobs:
           disable-animations: false
           script: echo "Generated AVD snapshot for caching."
 
-      - name: Run Android Integration Tests on Android API ${{ matrix.api-level }}
+      - name: Run Android Integration Tests on Android API ${{ env.ANDROID_API_LEVEL }}
         uses: reactivecircus/android-emulator-runner@v2
         with:
-          api-level: ${{ matrix.api-level }}
+          api-level: ${{ env.ANDROID_API_LEVEL }}
           force-avd-creation: false
           emulator-options: -no-window -gpu swiftshader -noaudio -no-boot-anim -camera-back none -no-snapshot-save
           emulator-boot-timeout: 1200
@@ -105,15 +107,21 @@ jobs:
           disable-animations: true
           script: |
             flutter pub get
-            flutter test integration_test --coverage --test-randomize-ordering-seed=random --file-reporter json:build/reports/android/integration-test-results${{ matrix.api-level }}.json
+            flutter test integration_test --coverage --test-randomize-ordering-seed=random --file-reporter json:build/reports/android/integration-test-results.json
 
-#      - name: Publish Android Integration Test Report
-#        uses: EnricoMi/publish-unit-test-result-action@v2
-#        if: always()
-#        with:
-#          check_name: "Android Integration Test Results"
-#          files: |
-#            build/reports/android/integration-test-results.json
+      - name: Upload Android Integration Test Report Artifact
+        uses: actions/upload-artifact@v3
+        with:
+          name: android-integration-test-report
+          path: build/reports/android/integration-test-results.json
+
+      - name: Publish Android Integration Test Report
+        uses: EnricoMi/publish-unit-test-result-action@v2
+        if: always()
+        with:
+          check_name: "Android Integration Test Results"
+          files: |
+            build/reports/android/integration-test-results.json
 
 #  ios:
 #    name: Build iOS
