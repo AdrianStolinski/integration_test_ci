@@ -83,6 +83,7 @@ jobs:
           api-level: ${{ env.ANDROID_API_LEVEL }}
           force-avd-creation: false
           emulator-options: -no-window -gpu swiftshader -noaudio -no-boot-anim -camera-back none
+          emulator-boot-timeout: 1200
           arch: x86_64
           target: google_apis
           disable-animations: false
@@ -94,6 +95,7 @@ jobs:
           api-level: ${{ env.ANDROID_API_LEVEL }}
           force-avd-creation: false
           emulator-options: -no-window -gpu swiftshader -noaudio -no-boot-anim -camera-back none -no-snapshot-save
+          emulator-boot-timeout: 1200
           arch: x86_64
           target: google_apis
           disable-animations: true
