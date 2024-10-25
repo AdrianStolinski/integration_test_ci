@@ -16,7 +16,7 @@ env:
 jobs:
   android:
     name: Build Android
-    runs-on: ubuntu-latest
+    runs-on: macos-latest
 
     permissions:
       contents: read # For EnricoMi/publish-unit-test-result-action
@@ -28,11 +28,11 @@ jobs:
       - name: Checkout Project
         uses: actions/checkout@v4
 
-      - name: Enable KVM group perms
-        run: |
-          echo 'KERNEL=="kvm", GROUP="kvm", MODE="0666", OPTIONS+="static_node=kvm"' | sudo tee /etc/udev/rules.d/99-kvm4all.rules
-          sudo udevadm control --reload-rules
-          sudo udevadm trigger --name-match=kvm
+#      - name: Enable KVM group perms
+#        run: |
+#          echo 'KERNEL=="kvm", GROUP="kvm", MODE="0666", OPTIONS+="static_node=kvm"' | sudo tee /etc/udev/rules.d/99-kvm4all.rules
+#          sudo udevadm control --reload-rules
+#          sudo udevadm trigger --name-match=kvm
 
       - name: Configure Flutter
         uses: subosito/flutter-action@v2
@@ -60,7 +60,7 @@ jobs:
             --file-reporter json:build/android/reports/unit-test-results.json
 
       - name: Publish Android Unit Test Report
-        uses: EnricoMi/publish-unit-test-result-action@v2
+        uses: EnricoMi/publish-unit-test-result-action/macos@v2
         if: always()
         with:
           check_name: "Android Unit Test Results"
@@ -83,8 +83,7 @@ jobs:
           api-level: ${{ env.ANDROID_API_LEVEL }}
           force-avd-creation: false
           emulator-options: -no-window -gpu swiftshader -noaudio -no-boot-anim -camera-back none
-          emulator-boot-timeout: 1200
-          arch: x86_64
+          arch: arm64-v8a
           target: google_apis
           disable-animations: false
           script: echo "Generated AVD snapshot for caching."
@@ -95,8 +94,7 @@ jobs:
           api-level: ${{ env.ANDROID_API_LEVEL }}
           force-avd-creation: false
           emulator-options: -no-window -gpu swiftshader -noaudio -no-boot-anim -camera-back none -no-snapshot-save
-          emulator-boot-timeout: 1200
-          arch: x86_64
+          arch: arm64-v8a
           target: google_apis
           disable-animations: true
           script: |
@@ -104,7 +102,7 @@ jobs:
             flutter test integration_test --coverage --test-randomize-ordering-seed=random --file-reporter json:build/reports/android/integration-test-results.json
 
       - name: Publish Android Integration Test Report
-        uses: EnricoMi/publish-unit-test-result-action@v2
+        uses: EnricoMi/publish-unit-test-result-action/macos@v2
         if: always()
         with:
           check_name: "Android Integration Test Results"
