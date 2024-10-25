@@ -83,7 +83,6 @@ jobs:
           api-level: ${{ env.ANDROID_API_LEVEL }}
           force-avd-creation: false
           emulator-options: -no-window -gpu swiftshader_indirect -noaudio -no-boot-anim -camera-back none
-          emulator-boot-timeout: 1200
           disable-animations: false
           script: echo "Generated AVD snapshot for caching."
 
@@ -94,7 +93,9 @@ jobs:
           force-avd-creation: false
           emulator-options: -no-window -gpu swiftshader_indirect -noaudio -no-boot-anim -camera-back none -no-snapshot-save
           disable-animations: true
-          script: flutter test integration_test --coverage --test-randomize-ordering-seed=random --file-reporter json:build/reports/android/integration-test-results.json
+          script: |
+            flutter pub get
+            flutter test integration_test --coverage --test-randomize-ordering-seed=random --file-reporter json:build/reports/android/integration-test-results.json
 
       - name: Publish Android Integration Test Report
         uses: EnricoMi/publish-unit-test-result-action@v2
