@@ -48,6 +48,18 @@ jobs:
             --test-randomize-ordering-seed=random \
             --file-reporter json:build/unit/reports/unit-test-results.json
 
+      - name: Upload Report
+        uses: actions/upload-artifact@v4
+        with:
+          name: report
+          path: build/unit/reports/unit-test-results.json
+
+      - name: Upload Coverage Report
+        uses: actions/upload-artifact@v2
+        with:
+          name: coverage-report
+          path: coverage/lcov.info
+
 #       Inne narzędzie do publikowania wyników testów
 #      - name: Publish iOS Unit Test Report
 #        uses: EnricoMi/publish-unit-test-result-action/macos@v2

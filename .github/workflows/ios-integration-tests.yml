@@ -63,12 +63,6 @@ jobs:
 #          files: |
 #            build/reports/ios/integration-test-results.json
 
-      - name: Upload Coverage Report
-        uses: actions/upload-artifact@v2
-        with:
-          name: coverage-report
-          path: build/reports/ios/integration-test-results.json
-
       - name: Test Reporting
         uses: phoenix-actions/test-reporting@v15
         id: test-report               # Set ID reference for step
