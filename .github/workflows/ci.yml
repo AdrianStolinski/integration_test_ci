@@ -17,6 +17,9 @@ jobs:
   android:
     name: Build Android
     runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        api-level: [31, 33]
 
     permissions:
       contents: read # For EnricoMi/publish-unit-test-result-action
@@ -59,13 +62,20 @@ jobs:
             --test-randomize-ordering-seed=random \
             --file-reporter json:build/android/reports/unit-test-results.json
 
-      - name: Publish Android Unit Test Report
-        uses: EnricoMi/publish-unit-test-result-action@v2
+      - name: Upload Unit Test Results
         if: always()
+        uses: actions/upload-artifact@v4
         with:
-          check_name: "Android Unit Test Results"
-          files: |
-            build/android/reports/unit-test-results.json
+          name: Android Unit Test Results API ${{ matrix.api-level }}
+          path: build/android/reports/unit-test-results.json
+
+#      - name: Publish Android Unit Test Report
+#        uses: EnricoMi/publish-unit-test-result-action@v2
+#        if: always()
+#        with:
+#          check_name: "Android Unit Test Results"
+#          files: |
+#            build/android/reports/unit-test-results.json
 
       - name: Cache AVD
         uses: actions/checkout@v4
@@ -74,13 +84,13 @@ jobs:
           path: |
             ~/.android/avd/*
             ~/.android/adb*
-          key: avd-${{ env.ANDROID_API_LEVEL }}
+          key: avd-${{ matrix.api-level }}
 
       - name: Create AVD and generate snapshot for caching
         if: steps.avd-cache.outputs.cache-hit != 'true'
         uses: reactivecircus/android-emulator-runner@v2
         with:
-          api-level: ${{ env.ANDROID_API_LEVEL }}
+          api-level: ${{ matrix.api-level }}
           force-avd-creation: false
           emulator-options: -no-window -gpu swiftshader -noaudio -no-boot-anim -camera-back none
           emulator-boot-timeout: 1200
@@ -89,10 +99,10 @@ jobs:
           disable-animations: false
           script: echo "Generated AVD snapshot for caching."
 
-      - name: Run Android Integration Tests on Android API ${{ env.ANDROID_API_LEVEL }}
+      - name: Run Android Integration Tests on Android API ${{ matrix.api-level }}
         uses: reactivecircus/android-emulator-runner@v2
         with:
-          api-level: ${{ env.ANDROID_API_LEVEL }}
+          api-level: ${{ matrix.api-level }}
           force-avd-creation: false
           emulator-options: -no-window -gpu swiftshader -noaudio -no-boot-anim -camera-back none -no-snapshot-save
           emulator-boot-timeout: 1200
@@ -103,13 +113,43 @@ jobs:
             flutter pub get
             flutter test integration_test --coverage --test-randomize-ordering-seed=random --file-reporter json:build/reports/android/integration-test-results.json
 
-      - name: Publish Android Integration Test Report
-        uses: EnricoMi/publish-unit-test-result-action@v2
+      - name: Upload Integration Test Results
         if: always()
+        uses: actions/upload-artifact@v4
         with:
-          check_name: "Android Integration Test Results"
-          files: |
-            build/reports/android/integration-test-results.json
+          name: Android Integration Test Results API ${{ matrix.api-level }}
+          path: build/reports/android/integration-test-results.json
+
+#      - name: Publish Android Integration Test Report
+#        uses: EnricoMi/publish-unit-test-result-action@v2
+#        if: always()
+#        with:
+#          check_name: "Android Integration Test Results"
+#          files: |
+#            build/reports/android/integration-test-results.json
+
+  publish-test-results:
+    name: Publish Android Test Results
+    needs: android
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read # For EnricoMi/publish-unit-test-result-action
+      issues: read # For EnricoMi/publish-unit-test-result-action
+      checks: write # For EnricoMi/publish-unit-test-result-action
+      pull-requests: write # For EnricoMi/publish-unit-test-result-action
+
+    if: always()
+
+    steps:
+      - name: Download Artifacts
+        uses: actions/download-artifact@v4
+        with:
+          path: artifacts
+
+      - name: Publish Test Results
+        uses: EnricoMi/publish-unit-test-result-action@v2
+        with:
+          files: artifacts/**/*.json
 
   ios:
     name: Build iOS
