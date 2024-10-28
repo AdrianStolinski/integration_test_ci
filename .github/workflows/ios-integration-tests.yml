@@ -61,3 +61,6 @@ jobs:
           check_name: "iOS Integration Test Results"
           files: |
             build/reports/ios/integration-test-results.json
+
+      - name: Shutdown all iOS Simulators
+        run: xcrun simctl shutdown all
