@@ -54,6 +54,7 @@ jobs:
           xcrun simctl boot "${UDID:?No Simulator with this name found}"
           flutter test integration_test --coverage --test-randomize-ordering-seed=random --file-reporter json:build/reports/ios/integration-test-results.json
 
+#       Inne narzędzie do publikowania wyników testów
 #      - name: Publish iOS Integration Test Report
 #        uses: EnricoMi/publish-unit-test-result-action/macos@v2
 #        if: always()
@@ -61,6 +62,12 @@ jobs:
 #          check_name: "iOS Integration Test Results"
 #          files: |
 #            build/reports/ios/integration-test-results.json
+
+      - name: Upload Coverage Report
+        uses: actions/upload-artifact@v2
+        with:
+          name: coverage-report
+          path: build/reports/ios/integration-test-results.json
 
       - name: Test Reporting
         uses: phoenix-actions/test-reporting@v15
