@@ -15,11 +15,11 @@
 #    name: Build iOS
 #    runs-on: macos-latest
 #
-##    permissions:
-##      contents: read # For EnricoMi/publish-unit-test-result-action
-##      issues: read # For EnricoMi/publish-unit-test-result-action
-##      checks: write # For EnricoMi/publish-unit-test-result-action
-##      pull-requests: write # For EnricoMi/publish-unit-test-result-action
+#    permissions:
+#      contents: read # For EnricoMi/publish-unit-test-result-action
+#      issues: read # For EnricoMi/publish-unit-test-result-action
+#      checks: write # For EnricoMi/publish-unit-test-result-action
+#      pull-requests: write # For EnricoMi/publish-unit-test-result-action
 #
 #    steps:
 #      - name: Checkout Project
