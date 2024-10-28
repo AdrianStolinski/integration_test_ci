@@ -54,13 +54,22 @@ jobs:
           xcrun simctl boot "${UDID:?No Simulator with this name found}"
           flutter test integration_test --coverage --test-randomize-ordering-seed=random --file-reporter json:build/reports/ios/integration-test-results.json
 
-      - name: Publish iOS Integration Test Report
-        uses: EnricoMi/publish-unit-test-result-action/macos@v2
-        if: always()
+#      - name: Publish iOS Integration Test Report
+#        uses: EnricoMi/publish-unit-test-result-action/macos@v2
+#        if: always()
+#        with:
+#          check_name: "iOS Integration Test Results"
+#          files: |
+#            build/reports/ios/integration-test-results.json
+
+      - name: Test Report
+        uses: phoenix-actions/test-reporting@v8
+        id: test-report               # Set ID reference for step
+        if: success() || failure()    # run this step even if previous step failed
         with:
-          check_name: "iOS Integration Test Results"
-          files: |
-            build/reports/ios/integration-test-results.json
+          name: iOS Integration Tests          # Name of the check run which will be created
+          path: build/reports/ios/integration-test-results.json    # Path to test results
+          reporter: flutter-json
 
       - name: Shutdown all iOS Simulators
         run: xcrun simctl shutdown all

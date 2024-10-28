@@ -48,10 +48,19 @@ jobs:
             --test-randomize-ordering-seed=random \
             --file-reporter json:build/unit/reports/unit-test-results.json
 
-      - name: Publish iOS Unit Test Report
-        uses: EnricoMi/publish-unit-test-result-action/macos@v2
-        if: always()
+#      - name: Publish iOS Unit Test Report
+#        uses: EnricoMi/publish-unit-test-result-action/macos@v2
+#        if: always()
+#        with:
+#          check_name: "Unit Test Results"
+#          files: |
+#            build/unit/reports/unit-test-results.json
+
+      - name: Test Report
+        uses: phoenix-actions/test-reporting@v8
+        id: test-report-unit              # Set ID reference for step
+        if: success() || failure()    # run this step even if previous step failed
         with:
-          check_name: "Unit Test Results"
-          files: |
-            build/unit/reports/unit-test-results.json
+          name: Unit Tests          # Name of the check run which will be created
+          path: build/unit/reports/unit-test-results.json    # Path to test results
+          reporter: flutter-json
