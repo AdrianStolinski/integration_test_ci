@@ -59,12 +59,6 @@ jobs:
             --test-randomize-ordering-seed=random \
             --file-reporter json:build/android/reports/unit-test-results.json
 
-      - name: Upload Android Unit Test Report Artifact
-        uses: actions/upload-artifact@v4
-        with:
-          name: android-unit-test-report
-          path: build/android/reports/unit-test-results.json
-
       - name: Publish Android Unit Test Report
         uses: EnricoMi/publish-unit-test-result-action@v2
         if: always()
@@ -109,12 +103,6 @@ jobs:
             flutter pub get
             flutter test integration_test --coverage --test-randomize-ordering-seed=random --file-reporter json:build/reports/android/integration-test-results.json
 
-      - name: Upload Android Integration Test Report Artifact
-        uses: actions/upload-artifact@v4
-        with:
-          name: android-integration-test-report
-          path: build/reports/android/integration-test-results.json
-
       - name: Publish Android Integration Test Report
         uses: EnricoMi/publish-unit-test-result-action@v2
         if: always()
@@ -123,67 +111,67 @@ jobs:
           files: |
             build/reports/android/integration-test-results.json
 
-#  ios:
-#    name: Build iOS
-#    runs-on: macos-latest
-#
-#    permissions:
-#      contents: read # For EnricoMi/publish-unit-test-result-action
-#      issues: read # For EnricoMi/publish-unit-test-result-action
-#      checks: write # For EnricoMi/publish-unit-test-result-action
-#      pull-requests: write # For EnricoMi/publish-unit-test-result-action
-#
-#    steps:
-#      - name: Checkout Project
-#        uses: actions/checkout@v4
-#
-#      - name: Cache iOS Dependencies
-#        uses: actions/cache@v4
-#        with:
-#          path: |
-#            ios/Pods
-#            /opt/hostedtoolcache/flutter
-#            /Users/runner/hostedtoolcache/flutter
-#            /Users/runner/.pub-cache
-#          key: ${{ runner.os }}-build
-#          restore-keys: |
-#            ${{ runner.os }}-build
-#
-#      - name: Configure Flutter
-#        uses: subosito/flutter-action@v2
-#        with:
-#          channel: stable
-#          cache: true
-#
-#      - name: Run iOS Unit Tests
-#        run: |
-#          flutter test --coverage \
-#            --test-randomize-ordering-seed=random \
-#            --file-reporter json:build/ios/reports/unit-test-results.json
-#
-#      - name: Publish iOS Unit Test Report
-#        uses: EnricoMi/publish-unit-test-result-action/macos@v2
-#        if: always()
-#        with:
-#          check_name: "iOS Unit Test Results"
-#          files: |
-#            build/ios/reports/unit-test-results.json
-#
-#      - name: Run iOS Integration Tests on ${{ env.IPHONE_DEVICE }} Simulator
-#        run: |
-#          UDID=$(
-#            xcrun xctrace list devices 2>&1 |
-#            grep -m 1 "${{ env.IPHONE_DEVICE }}" |
-#            awk -F'[()]' '{ print $4 }'
-#          )
-#          echo $UDID
-#          xcrun simctl boot "${UDID:?No Simulator with this name found}"
-#          flutter test integration_test --coverage --test-randomize-ordering-seed=random --file-reporter json:build/reports/ios/integration-test-results.json
-#
-#      - name: Publish iOS Integration Test Report
-#        uses: EnricoMi/publish-unit-test-result-action/macos@v2
-#        if: always()
-#        with:
-#          check_name: "iOS Integration Test Results"
-#          files: |
-#            build/reports/ios/integration-test-results.json
+  ios:
+    name: Build iOS
+    runs-on: macos-latest
+
+    permissions:
+      contents: read # For EnricoMi/publish-unit-test-result-action
+      issues: read # For EnricoMi/publish-unit-test-result-action
+      checks: write # For EnricoMi/publish-unit-test-result-action
+      pull-requests: write # For EnricoMi/publish-unit-test-result-action
+
+    steps:
+      - name: Checkout Project
+        uses: actions/checkout@v4
+
+      - name: Cache iOS Dependencies
+        uses: actions/cache@v4
+        with:
+          path: |
+            ios/Pods
+            /opt/hostedtoolcache/flutter
+            /Users/runner/hostedtoolcache/flutter
+            /Users/runner/.pub-cache
+          key: ${{ runner.os }}-build
+          restore-keys: |
+            ${{ runner.os }}-build
+
+      - name: Configure Flutter
+        uses: subosito/flutter-action@v2
+        with:
+          channel: stable
+          cache: true
+
+      - name: Run iOS Unit Tests
+        run: |
+          flutter test --coverage \
+            --test-randomize-ordering-seed=random \
+            --file-reporter json:build/ios/reports/unit-test-results.json
+
+      - name: Publish iOS Unit Test Report
+        uses: EnricoMi/publish-unit-test-result-action/macos@v2
+        if: always()
+        with:
+          check_name: "iOS Unit Test Results"
+          files: |
+            build/ios/reports/unit-test-results.json
+
+      - name: Run iOS Integration Tests on ${{ env.IPHONE_DEVICE }} Simulator
+        run: |
+          UDID=$(
+            xcrun xctrace list devices 2>&1 |
+            grep -m 1 "${{ env.IPHONE_DEVICE }}" |
+            awk -F'[()]' '{ print $4 }'
+          )
+          echo $UDID
+          xcrun simctl boot "${UDID:?No Simulator with this name found}"
+          flutter test integration_test --coverage --test-randomize-ordering-seed=random --file-reporter json:build/reports/ios/integration-test-results.json
+
+      - name: Publish iOS Integration Test Report
+        uses: EnricoMi/publish-unit-test-result-action/macos@v2
+        if: always()
+        with:
+          check_name: "iOS Integration Test Results"
+          files: |
+            build/reports/ios/integration-test-results.json
