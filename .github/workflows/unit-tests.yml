@@ -51,7 +51,7 @@ jobs:
       - name: lcov Code Coverage Report
         uses: JoA-MoS/lcov-reporter-action@v1.0.0-alpha.4
         with:
-          lcov-file: coverage/lcov.info
+          lcov-file: ./coverage/lcov.info
 
 #      - name: Upload Report
 #        uses: actions/upload-artifact@v4
