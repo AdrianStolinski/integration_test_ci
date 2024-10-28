@@ -10,7 +10,7 @@ on:
 jobs:
   unit-tests:
     name: Unit tests
-    runs-on: macos-latest
+    runs-on: ubuntu-latest
 
     permissions:
       contents: read # For EnricoMi/publish-unit-test-result-action
