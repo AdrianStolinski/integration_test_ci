@@ -60,7 +60,7 @@ jobs:
             --file-reporter json:build/android/reports/unit-test-results.json
 
       - name: Upload Android Unit Test Report Artifact
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: android-unit-test-report
           path: build/android/reports/unit-test-results.json
@@ -110,7 +110,7 @@ jobs:
             flutter test integration_test --coverage --test-randomize-ordering-seed=random --file-reporter json:build/reports/android/integration-test-results.json
 
       - name: Upload Android Integration Test Report Artifact
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: android-integration-test-report
           path: build/reports/android/integration-test-results.json
