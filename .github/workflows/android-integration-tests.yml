@@ -18,10 +18,10 @@ jobs:
     runs-on: ubuntu-latest
 
     permissions:
-      contents: read # For EnricoMi/publish-unit-test-result-action
-      issues: read # For EnricoMi/publish-unit-test-result-action
-      checks: write # For EnricoMi/publish-unit-test-result-action
-      pull-requests: write # For EnricoMi/publish-unit-test-result-action
+      contents: read
+      issues: read
+      checks: write
+      pull-requests: write
 
     steps:
       - name: Checkout Project
