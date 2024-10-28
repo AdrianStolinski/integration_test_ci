@@ -1,0 +1,57 @@
+name: Unit tests
+
+on:
+  push:
+    branches:
+      - master
+  pull_request:
+    types: [ opened, labeled, unlabeled, synchronize ]
+
+jobs:
+  unit-tests:
+    name: Unit tests
+    runs-on: macos-latest
+
+    permissions:
+      contents: read # For EnricoMi/publish-unit-test-result-action
+      issues: read # For EnricoMi/publish-unit-test-result-action
+      checks: write # For EnricoMi/publish-unit-test-result-action
+      pull-requests: write # For EnricoMi/publish-unit-test-result-action
+
+    steps:
+      - name: Checkout Project
+        uses: actions/checkout@v4
+
+      - name: Cache Build Dependencies
+        uses: actions/cache@v4
+        with:
+          path: |
+            /opt/hostedtoolcache/flutter
+            /Users/runner/hostedtoolcache/flutter
+            /Users/runner/.pub-cache
+          key: unit-${{ runner.os }}-build
+          restore-keys: |
+            unit-${{ runner.os }}-build
+
+      - name: Configure Flutter
+        uses: subosito/flutter-action@v2
+        with:
+          channel: stable
+          cache: true
+
+      - name: Run Analyzer
+        run: flutter analyze
+
+      - name: Run Unit Tests
+        run: |
+          flutter test --coverage \
+            --test-randomize-ordering-seed=random \
+            --file-reporter json:build/unit/reports/unit-test-results.json
+
+      - name: Publish iOS Unit Test Report
+        uses: EnricoMi/publish-unit-test-result-action/macos@v2
+        if: always()
+        with:
+          check_name: "Unit Test Results"
+          files: |
+            build/unit/reports/unit-test-results.json
