@@ -48,13 +48,10 @@ jobs:
             --test-randomize-ordering-seed=random \
             --file-reporter json:build/unit/reports/unit-test-results.json
           
-      - name: Upload Coverage Summary
-        uses: irongut/CodeCoverageSummary@v1.3.0
+      - name: lcov Code Coverage Report
+        uses: JoA-MoS/lcov-reporter-action@v1.0.0-alpha.4
         with:
-          filename: coverage/lcov.info
-          badge: true
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          lcov-file: coverage/lcov.info
 
 #      - name: Upload Report
 #        uses: actions/upload-artifact@v4
