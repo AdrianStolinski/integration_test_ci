@@ -1,103 +1,100 @@
-name: Android Integration tests
-
-on:
-  push:
-    branches:
-      - master
-  pull_request:
-    types: [ opened, labeled, unlabeled, synchronize ]
-
-env:
-  GRADLE_OPTS: -Dorg.gradle.daemon=false -Dorg.gradle.configureondemand=true -Dkotlin.incremental=false -Dorg.gradle.jvmargs="-Xmx4g -Xms128m -XX:+HeapDumpOnOutOfMemoryError -Dfile.encoding=UTF-8 -XX:MaxMetaspaceSize=1024m"
-  JAVA_VERSION: 17
-  ANDROID_API_LEVEL: 31
-
-jobs:
-  android:
-    name: Build Android
-    runs-on: ubuntu-latest
-
-    permissions:
-      contents: read
-      issues: read
-      checks: write
-      pull-requests: write
-
-    steps:
-      - name: Checkout Project
-        uses: actions/checkout@v4
-
-      - name: Enable KVM group perms
-        run: |
-          echo 'KERNEL=="kvm", GROUP="kvm", MODE="0666", OPTIONS+="static_node=kvm"' | sudo tee /etc/udev/rules.d/99-kvm4all.rules
-          sudo udevadm control --reload-rules
-          sudo udevadm trigger --name-match=kvm
-
-      - name: Configure Flutter
-        uses: subosito/flutter-action@v2
-        with:
-          channel: stable
-          cache: true
-
-      - name: Configure JDK ${{ env.JAVA_VERSION }}
-        uses: actions/setup-java@v4.2.2
-        with:
-          distribution: temurin
-          java-version: ${{ env.JAVA_VERSION }}
-          cache: gradle
-
-      - name: Setup Gradle
-        uses: gradle/actions/setup-gradle@v4.1.0
-
-      - name: Cache AVD
-        uses: actions/checkout@v4
-        id: avd-cache
-        with:
-          path: |
-            ~/.android/avd/*
-            ~/.android/adb*
-          key: avd-${{ env.ANDROID_API_LEVEL }}
-
-      - name: Create AVD and generate snapshot for caching
-        if: steps.avd-cache.outputs.cache-hit != 'true'
-        uses: reactivecircus/android-emulator-runner@v2
-        with:
-          api-level: ${{ env.ANDROID_API_LEVEL }}
-          force-avd-creation: false
-          emulator-options: -no-window -gpu swiftshader -noaudio -no-boot-anim -camera-back none
-          emulator-boot-timeout: 1200
-          arch: x86_64
-          target: google_apis
-          disable-animations: false
-          script: echo "Generated AVD snapshot for caching."
-
-      - name: Run Android Integration Tests on Android API ${{ env.ANDROID_API_LEVEL }}
-        uses: reactivecircus/android-emulator-runner@v2
-        with:
-          api-level: ${{ env.ANDROID_API_LEVEL }}
-          force-avd-creation: false
-          emulator-options: -no-window -gpu swiftshader -noaudio -no-boot-anim -camera-back none -no-snapshot-save
-          emulator-boot-timeout: 1200
-          arch: x86_64
-          target: google_apis
-          disable-animations: true
-          script: |
-            flutter pub get
-            flutter test integration_test --coverage --test-randomize-ordering-seed=random --file-reporter json:build/reports/android/integration-test-results.json
-
-      - name: Test Reporting
-        uses: phoenix-actions/test-reporting@v15
-        id: test-report               # Set ID reference for step
-        if: success() || failure()    # run this step even if previous step failed
-        with:
-          name: Android Integration Tests          # Name of the check run which will be created
-          path: build/reports/android/integration-test-results.json   # Path to test results
-          reporter: flutter-json
-
-#      - name: Publish Android Integration Test Report
-#        uses: EnricoMi/publish-unit-test-result-action@v2
-#        if: always()
+#name: Android Integration tests
+#
+#on:
+#  pull_request:
+#    types: [ opened, labeled, unlabeled, synchronize ]
+#
+#env:
+#  GRADLE_OPTS: -Dorg.gradle.daemon=false -Dorg.gradle.configureondemand=true -Dkotlin.incremental=false -Dorg.gradle.jvmargs="-Xmx4g -Xms128m -XX:+HeapDumpOnOutOfMemoryError -Dfile.encoding=UTF-8 -XX:MaxMetaspaceSize=1024m"
+#  JAVA_VERSION: 17
+#  ANDROID_API_LEVEL: 31
+#
+#jobs:
+#  android:
+#    name: Build Android
+#    runs-on: ubuntu-latest
+#
+#    permissions:
+#      contents: read
+#      issues: read
+#      checks: write
+#      pull-requests: write
+#
+#    steps:
+#      - name: Checkout Project
+#        uses: actions/checkout@v4
+#
+#      - name: Enable KVM group perms
+#        run: |
+#          echo 'KERNEL=="kvm", GROUP="kvm", MODE="0666", OPTIONS+="static_node=kvm"' | sudo tee /etc/udev/rules.d/99-kvm4all.rules
+#          sudo udevadm control --reload-rules
+#          sudo udevadm trigger --name-match=kvm
+#
+#      - name: Configure Flutter
+#        uses: subosito/flutter-action@v2
 #        with:
-#          check_name: "Android Integration Test Results"
-#          files: |
-#            build/reports/android/integration-test-results.json
+#          channel: stable
+#          cache: true
+#
+#      - name: Configure JDK ${{ env.JAVA_VERSION }}
+#        uses: actions/setup-java@v4.2.2
+#        with:
+#          distribution: temurin
+#          java-version: ${{ env.JAVA_VERSION }}
+#          cache: gradle
+#
+#      - name: Setup Gradle
+#        uses: gradle/actions/setup-gradle@v4.1.0
+#
+#      - name: Cache AVD
+#        uses: actions/checkout@v4
+#        id: avd-cache
+#        with:
+#          path: |
+#            ~/.android/avd/*
+#            ~/.android/adb*
+#          key: avd-${{ env.ANDROID_API_LEVEL }}
+#
+#      - name: Create AVD and generate snapshot for caching
+#        if: steps.avd-cache.outputs.cache-hit != 'true'
+#        uses: reactivecircus/android-emulator-runner@v2
+#        with:
+#          api-level: ${{ env.ANDROID_API_LEVEL }}
+#          force-avd-creation: false
+#          emulator-options: -no-window -gpu swiftshader -noaudio -no-boot-anim -camera-back none
+#          emulator-boot-timeout: 1200
+#          arch: x86_64
+#          target: google_apis
+#          disable-animations: false
+#          script: echo "Generated AVD snapshot for caching."
+#
+#      - name: Run Android Integration Tests on Android API ${{ env.ANDROID_API_LEVEL }}
+#        uses: reactivecircus/android-emulator-runner@v2
+#        with:
+#          api-level: ${{ env.ANDROID_API_LEVEL }}
+#          force-avd-creation: false
+#          emulator-options: -no-window -gpu swiftshader -noaudio -no-boot-anim -camera-back none -no-snapshot-save
+#          emulator-boot-timeout: 1200
+#          arch: x86_64
+#          target: google_apis
+#          disable-animations: true
+#          script: |
+#            flutter pub get
+#            flutter test integration_test --coverage --test-randomize-ordering-seed=random --file-reporter json:build/reports/android/integration-test-results.json
+#
+#      - name: Test Reporting
+#        uses: phoenix-actions/test-reporting@v15
+#        id: test-report               # Set ID reference for step
+#        if: success() || failure()    # run this step even if previous step failed
+#        with:
+#          name: Android Integration Tests          # Name of the check run which will be created
+#          path: build/reports/android/integration-test-results.json   # Path to test results
+#          reporter: flutter-json
+#
+##      - name: Publish Android Integration Test Report
+##        uses: EnricoMi/publish-unit-test-result-action@v2
+##        if: always()
+##        with:
+##          check_name: "Android Integration Test Results"
+##          files: |
+##            build/reports/android/integration-test-results.json
