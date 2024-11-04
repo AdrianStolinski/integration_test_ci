@@ -45,6 +45,16 @@ jobs:
             --test-randomize-ordering-seed=random \
             --file-reporter json:build/unit/reports/unit-test-results.json
 
+#      Poniższy krok służy do usunięcia pokrycia kodu dla wygenerowanych plików, użyte przykłady
+#      '*.g.dart' oraz 'lib/generated/**' należy podmienić wszystkimi plikami generowanymi
+#      w danym repozytorium
+      - name: Remove Code Coverage for Generated Files
+        run: |
+          lcov --remove coverage/lcov.info -o coverage/lcov.info --ignore-errors unused,unused \
+            '*.g.dart' \
+            'lib/generated/**' \
+            'lib/login_page.dart'
+
       - name: lcov Code Coverage Report
         uses: JoA-MoS/lcov-reporter-action@v1.0.0-alpha.4
         with:
