@@ -1,93 +1,93 @@
-#name: Android emulator
-#on:
-#  pull_request:
-#    types: [ opened, labeled, unlabeled, synchronize ]
-#
-#env:
-#  ANDROID_ARCH: x86_64
-#  ANDROID_TARGET: google_apis_playstore
-#  API_LEVEL: 33
-#  ANDROID_BUILD_TOOLS_VERSION: 33.0.2
-#  ANDROID_SDK_PACKAGES: system-images;android-33;google_apis_playstore;x86_64 platforms;android-33 build-tools;33.0.2 platform-tools emulator
-#  EMULATOR_TIMEOUT: 350
-#  EMULATOR_NAME: nexus
-#  JAVA_VERSION: 17
-#  GRADLE_OPTS: -Dorg.gradle.daemon=false -Dorg.gradle.configureondemand=true -Dkotlin.incremental=false -Dorg.gradle.jvmargs="-Xmx4g -Xms128m -XX:+HeapDumpOnOutOfMemoryError -Dfile.encoding=UTF-8 -XX:MaxMetaspaceSize=1024m"
-#
-#jobs:
-#  playwright-emulator:
-#    timeout-minutes: 20
-#    runs-on: ubuntu-latest
-#
-#    permissions:
-#      contents: read
-#      issues: read
-#      checks: write
-#      pull-requests: write
-#
-#    steps:
-#      - name: Checkout Project
-#        uses: actions/checkout@v4
-#
+name: Android emulator
+on:
+  pull_request:
+    types: [ opened, labeled, unlabeled, synchronize ]
+
+env:
+  ANDROID_ARCH: arm64-v8a
+  ANDROID_TARGET: google_apis_playstore
+  API_LEVEL: 33
+  ANDROID_BUILD_TOOLS_VERSION: 33.0.2
+  ANDROID_SDK_PACKAGES: system-images;android-33;google_apis_playstore;arm64-v8a platforms;android-33 build-tools;33.0.2 platform-tools emulator
+  EMULATOR_TIMEOUT: 350
+  EMULATOR_NAME: nexus
+  JAVA_VERSION: 17
+  GRADLE_OPTS: -Dorg.gradle.daemon=false -Dorg.gradle.configureondemand=true -Dkotlin.incremental=false -Dorg.gradle.jvmargs="-Xmx4g -Xms128m -XX:+HeapDumpOnOutOfMemoryError -Dfile.encoding=UTF-8 -XX:MaxMetaspaceSize=1024m"
+
+jobs:
+  playwright-emulator:
+    timeout-minutes: 20
+    runs-on: ubuntu-latest
+
+    permissions:
+      contents: read
+      issues: read
+      checks: write
+      pull-requests: write
+
+    steps:
+      - name: Checkout Project
+        uses: actions/checkout@v4
+
 #      - name: Enable KVM group perms
 #        run: |
 #          echo 'KERNEL=="kvm", GROUP="kvm", MODE="0666", OPTIONS+="static_node=kvm"' | sudo tee /etc/udev/rules.d/99-kvm4all.rules
 #          sudo udevadm control --reload-rules
 #          sudo udevadm trigger --name-match=kvm
-#
-#      - name: Add avdmanager and sdkmanager to system PATH
-#        run: |
-#          echo "$ANDROID_HOME/cmdline-tools/latest/bin:$ANDROID_HOME/emulator:$ANDROID_HOME/tools:$ANDROID_HOME/platform-tools:$ANDROID_HOME/build-tools/${{ env.ANDROID_BUILD_TOOLS_VERSION }}" >> $GITHUB_PATH
-#
-#      - name: Install Sdk
-#        run: |
-#          yes Y | sdkmanager --licenses
-#          sdkmanager --install ${ANDROID_SDK_PACKAGES}
-#
-#      - name: Build emulator
-#        run: |
-#          echo "no" | avdmanager --verbose create avd --force -n $EMULATOR_NAME --abi "${ANDROID_TARGET}/${ANDROID_ARCH}" -k "system-images;android-${API_LEVEL};${ANDROID_TARGET};${ANDROID_ARCH}"
-#
-#      - name: Launch emulator
-#        run: |
-#          chmod +x ./start_emu_headless.sh
-#          EMULATOR_TIMEOUT=$EMULATOR_TIMEOUT EMULATOR_NAME=$EMULATOR_NAME ./start_emu_headless.sh
-#
-#      - name: Configure Flutter
-#        uses: subosito/flutter-action@v2
-#        with:
-#          channel: stable
-#          cache: true
-#
-#      - name: Configure JDK ${{ env.JAVA_VERSION }}
-#        uses: actions/setup-java@v4.2.2
-#        with:
-#          distribution: temurin
-#          java-version: ${{ env.JAVA_VERSION }}
-#          cache: gradle
-#
-#      - name: Setup Gradle
-#        uses: gradle/actions/setup-gradle@v4.1.0
-#
-#      - name: Cache AVD
-#        uses: actions/checkout@v4
-#        id: avd-cache
-#        with:
-#          path: |
-#            ~/.android/avd/*
-#            ~/.android/adb*
-#          key: avd-${{ env.ANDROID_API_LEVEL }}
-#
-#      - name: Run Android Integration Tests
-#        run: |
-#          flutter pub get
-#          flutter test integration_test --coverage --test-randomize-ordering-seed=random --file-reporter json:build/reports/android/integration-test-results.json
-#
-#      - name: Test Reporting
-#        uses: phoenix-actions/test-reporting@v15
-#        id: test-report               # Set ID reference for step
-#        if: success() || failure()    # run this step even if previous step failed
-#        with:
-#          name: Android Integration Tests          # Name of the check run which will be created
-#          path: build/reports/android/integration-test-results.json   # Path to test results
-#          reporter: flutter-json
+
+      - name: Add avdmanager and sdkmanager to system PATH
+        run: |
+          echo "$ANDROID_HOME/cmdline-tools/latest/bin:$ANDROID_HOME/emulator:$ANDROID_HOME/tools:$ANDROID_HOME/platform-tools:$ANDROID_HOME/build-tools/${{ env.ANDROID_BUILD_TOOLS_VERSION }}" >> $GITHUB_PATH
+
+      - name: Install Sdk
+        run: |
+          yes Y | sdkmanager --licenses
+          sdkmanager --install ${ANDROID_SDK_PACKAGES}
+
+      - name: Build emulator
+        run: |
+          echo "no" | avdmanager --verbose create avd --force -n $EMULATOR_NAME --abi "${ANDROID_TARGET}/${ANDROID_ARCH}" -k "system-images;android-${API_LEVEL};${ANDROID_TARGET};${ANDROID_ARCH}"
+
+      - name: Launch emulator
+        run: |
+          chmod +x ./start_emu_headless.sh
+          EMULATOR_TIMEOUT=$EMULATOR_TIMEOUT EMULATOR_NAME=$EMULATOR_NAME ./start_emu_headless.sh
+
+      - name: Configure Flutter
+        uses: subosito/flutter-action@v2
+        with:
+          channel: stable
+          cache: true
+
+      - name: Configure JDK ${{ env.JAVA_VERSION }}
+        uses: actions/setup-java@v4.2.2
+        with:
+          distribution: temurin
+          java-version: ${{ env.JAVA_VERSION }}
+          cache: gradle
+
+      - name: Setup Gradle
+        uses: gradle/actions/setup-gradle@v4.1.0
+
+      - name: Cache AVD
+        uses: actions/checkout@v4
+        id: avd-cache
+        with:
+          path: |
+            ~/.android/avd/*
+            ~/.android/adb*
+          key: avd-${{ env.ANDROID_API_LEVEL }}
+
+      - name: Run Android Integration Tests
+        run: |
+          flutter pub get
+          flutter test integration_test --coverage --test-randomize-ordering-seed=random --file-reporter json:build/reports/android/integration-test-results.json
+
+      - name: Test Reporting
+        uses: phoenix-actions/test-reporting@v15
+        id: test-report               # Set ID reference for step
+        if: success() || failure()    # run this step even if previous step failed
+        with:
+          name: Android Integration Tests          # Name of the check run which will be created
+          path: build/reports/android/integration-test-results.json   # Path to test results
+          reporter: flutter-json
