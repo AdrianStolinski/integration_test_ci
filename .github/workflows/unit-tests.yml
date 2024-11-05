@@ -45,6 +45,9 @@ jobs:
             --test-randomize-ordering-seed=random \
             --file-reporter json:build/unit/reports/unit-test-results.json
 
+      - name: Setup LCOV
+        uses: hrishikesh-kadam/setup-lcov@v1
+
 #      Poniższy krok służy do usunięcia pokrycia kodu dla wygenerowanych plików, użyte przykłady
 #      '*.g.dart' oraz 'lib/generated/**' należy podmienić wszystkimi plikami generowanymi
 #      w danym repozytorium
