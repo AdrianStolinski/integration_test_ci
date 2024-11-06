@@ -1,73 +1,78 @@
-#name: iOS Integrations tests
-#
+name: iOS Integrations tests
+
 #on:
 #  pull_request:
 #    types: [ opened, labeled, unlabeled, synchronize ]
-#
-#env:
-#  IPHONE_DEVICE: "iPhone 15 Pro Max"
-#
-#jobs:
-#  ios:
-#    name: Build iOS
-#    runs-on: macos-latest
-#
-#    permissions:
-#      contents: read
-#      issues: read
-#      checks: write
-#      pull-requests: write
-#
-#    steps:
-#      - name: Checkout Project
-#        uses: actions/checkout@v4
-#
-#      - name: Cache iOS Dependencies
-#        uses: actions/cache@v4
+
+on:
+  push:
+    tags:
+      - test
+
+env:
+  IPHONE_DEVICE: "iPhone 15 Pro Max"
+
+jobs:
+  ios:
+    name: Build iOS
+    runs-on: macos-latest
+
+    permissions:
+      contents: read
+      issues: read
+      checks: write
+      pull-requests: write
+
+    steps:
+      - name: Checkout Project
+        uses: actions/checkout@v4
+
+      - name: Cache iOS Dependencies
+        uses: actions/cache@v4
+        with:
+          path: |
+            ios/Pods
+            /opt/hostedtoolcache/flutter
+            /Users/runner/hostedtoolcache/flutter
+            /Users/runner/.pub-cache
+          key: ios-${{ runner.os }}-build
+          restore-keys: |
+            ios-${{ runner.os }}-build
+
+      - name: Configure Flutter
+        uses: subosito/flutter-action@v2
+        with:
+          channel: stable
+          cache: true
+
+      - name: Run iOS Integration Tests on ${{ env.IPHONE_DEVICE }} Simulator
+        run: |
+          UDID=$(
+            xcrun xctrace list devices 2>&1 |
+            grep -m 1 "${{ env.IPHONE_DEVICE }}" |
+            awk -F'[()]' '{ print $4 }'
+          )
+          echo $UDID
+          xcrun simctl boot "${UDID:?No Simulator with this name found}"
+          flutter test integration_test --coverage --test-randomize-ordering-seed=random --file-reporter json:build/reports/ios/integration-test-results.json
+
+#       Inne narzędzie do publikowania wyników testów
+#      - name: Publish iOS Integration Test Report
+#        uses: EnricoMi/publish-unit-test-result-action/macos@v2
+#        if: always()
 #        with:
-#          path: |
-#            ios/Pods
-#            /opt/hostedtoolcache/flutter
-#            /Users/runner/hostedtoolcache/flutter
-#            /Users/runner/.pub-cache
-#          key: ios-${{ runner.os }}-build
-#          restore-keys: |
-#            ios-${{ runner.os }}-build
-#
-#      - name: Configure Flutter
-#        uses: subosito/flutter-action@v2
-#        with:
-#          channel: stable
-#          cache: true
-#
-#      - name: Run iOS Integration Tests on ${{ env.IPHONE_DEVICE }} Simulator
-#        run: |
-#          UDID=$(
-#            xcrun xctrace list devices 2>&1 |
-#            grep -m 1 "${{ env.IPHONE_DEVICE }}" |
-#            awk -F'[()]' '{ print $4 }'
-#          )
-#          echo $UDID
-#          xcrun simctl boot "${UDID:?No Simulator with this name found}"
-#          flutter test integration_test --coverage --test-randomize-ordering-seed=random --file-reporter json:build/reports/ios/integration-test-results.json
-#
-##       Inne narzędzie do publikowania wyników testów
-##      - name: Publish iOS Integration Test Report
-##        uses: EnricoMi/publish-unit-test-result-action/macos@v2
-##        if: always()
-##        with:
-##          check_name: "iOS Integration Test Results"
-##          files: |
-##            build/reports/ios/integration-test-results.json
-#
-#      - name: Test Reporting
-#        uses: phoenix-actions/test-reporting@v15
-#        id: test-report               # Set ID reference for step
-#        if: success() || failure()    # run this step even if previous step failed
-#        with:
-#          name: iOS Integration Tests          # Name of the check run which will be created
-#          path: build/reports/ios/integration-test-results.json    # Path to test results
-#          reporter: flutter-json
-#
-#      - name: Shutdown all iOS Simulators
-#        run: xcrun simctl shutdown all
+#          check_name: "iOS Integration Test Results"
+#          files: |
+#            build/reports/ios/integration-test-results.json
+
+      - name: Test Reporting
+        uses: phoenix-actions/test-reporting@v15
+        id: test-report               # Set ID reference for step
+        if: success() || failure()    # run this step even if previous step failed
+        with:
+          name: iOS Integration Tests          # Name of the check run which will be created
+          path: build/reports/ios/integration-test-results.json    # Path to test results
+          reporter: flutter-json
+
+      - name: Shutdown all iOS Simulators
+        run: xcrun simctl shutdown all
