@@ -1,11 +1,13 @@
 name: Android Integration tests
 
+#on:
+#  pull_request:
+#    types: [ opened, labeled, unlabeled, synchronize ]
+
 on:
   push:
-    branches:
-      - master
-  pull_request:
-    types: [ opened, labeled, unlabeled, synchronize ]
+    tags:
+      - test
 
 env:
   GRADLE_OPTS: -Dorg.gradle.daemon=false -Dorg.gradle.configureondemand=true -Dkotlin.incremental=false -Dorg.gradle.jvmargs="-Xmx4g -Xms128m -XX:+HeapDumpOnOutOfMemoryError -Dfile.encoding=UTF-8 -XX:MaxMetaspaceSize=1024m"
@@ -94,6 +96,7 @@ jobs:
           path: build/reports/android/integration-test-results.json   # Path to test results
           reporter: flutter-json
 
+#       Inne narzędzie do publikowania wyników testów
 #      - name: Publish Android Integration Test Report
 #        uses: EnricoMi/publish-unit-test-result-action@v2
 #        if: always()

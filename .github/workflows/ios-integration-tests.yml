@@ -1,11 +1,13 @@
 name: iOS Integrations tests
 
+#on:
+#  pull_request:
+#    types: [ opened, labeled, unlabeled, synchronize ]
+
 on:
   push:
-    branches:
-      - master
-  pull_request:
-    types: [ opened, labeled, unlabeled, synchronize ]
+    tags:
+      - test
 
 env:
   IPHONE_DEVICE: "iPhone 15 Pro Max"

@@ -1,11 +1,13 @@
 name: Unit tests
 
+#on:
+#  pull_request:
+#    types: [ opened, labeled, unlabeled, synchronize ]
+
 on:
   push:
-    branches:
-      - master
-  pull_request:
-    types: [ opened, labeled, unlabeled, synchronize ]
+    tags:
+      - test
 
 jobs:
   unit-tests:
@@ -47,6 +49,19 @@ jobs:
           flutter test --coverage \
             --test-randomize-ordering-seed=random \
             --file-reporter json:build/unit/reports/unit-test-results.json
+
+      - name: Setup LCOV
+        uses: hrishikesh-kadam/setup-lcov@v1
+
+#      Poniższy krok służy do usunięcia pokrycia kodu dla wygenerowanych plików, użyte przykłady
+#      '*.g.dart', 'lib/generated/**' oraz 'lib/login_page.dart' należy podmienić wszystkimi plikami
+#      generowanymi w danym repozytorium
+      - name: Remove Code Coverage for Generated Files
+        run: |
+          lcov --remove coverage/lcov.info -o coverage/lcov.info --ignore-errors unused,unused \
+            '*.g.dart' \
+            'lib/generated/**' \
+            'lib/login_page.dart'
 
       - name: lcov Code Coverage Report
         uses: JoA-MoS/lcov-reporter-action@v1.0.0-alpha.4
