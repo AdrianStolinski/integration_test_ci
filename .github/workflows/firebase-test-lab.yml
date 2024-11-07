@@ -1,0 +1,38 @@
+name: Test Lab integration test
+
+on:
+  pull_request:
+    types: [ opened, labeled, unlabeled, synchronize ]
+
+env:
+  JAVA_VERSION: 17
+
+jobs:
+  integrationTest:
+    name: Integration Test
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout Project
+        uses: actions/checkout@v4
+
+      - name: Configure Flutter
+        uses: subosito/flutter-action@v2
+        with:
+          channel: stable
+          cache: true
+
+      - name: Configure JDK ${{ env.JAVA_VERSION }}
+        uses: actions/setup-java@v4.2.2
+        with:
+          distribution: temurin
+          java-version: ${{ env.JAVA_VERSION }}
+          cache: gradle
+
+      - name: Generate apk for testlab
+        run: |
+          pushd android
+          flutter build apk --debug
+          ./gradlew app:assembleAndroidTest
+          ./gradlew app:assembleDebug -Ptarget=integration_test/app_test.dart
+          popd
