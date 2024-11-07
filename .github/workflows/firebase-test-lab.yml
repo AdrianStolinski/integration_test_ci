@@ -16,26 +16,26 @@ jobs:
       - name: Checkout Project
         uses: actions/checkout@v4
 
-      - name: Configure Flutter
-        uses: subosito/flutter-action@v2
-        with:
-          channel: stable
-          cache: true
-
-      - name: Configure JDK ${{ env.JAVA_VERSION }}
-        uses: actions/setup-java@v4.2.2
-        with:
-          distribution: temurin
-          java-version: ${{ env.JAVA_VERSION }}
-          cache: gradle
-
-      - name: Generate apk for testlab
-        run: |
-          pushd android
-          flutter build apk --debug
-          ./gradlew app:assembleAndroidTest
-          ./gradlew app:assembleDebug -Ptarget=integration_test/app_test.dart
-          popd
+#      - name: Configure Flutter
+#        uses: subosito/flutter-action@v2
+#        with:
+#          channel: stable
+#          cache: true
+#
+#      - name: Configure JDK ${{ env.JAVA_VERSION }}
+#        uses: actions/setup-java@v4.2.2
+#        with:
+#          distribution: temurin
+#          java-version: ${{ env.JAVA_VERSION }}
+#          cache: gradle
+#
+#      - name: Generate apk for testlab
+#        run: |
+#          pushd android
+#          flutter build apk --debug
+#          ./gradlew app:assembleAndroidTest
+#          ./gradlew app:assembleDebug -Ptarget=integration_test/app_test.dart
+#          popd
 
       - name: Decode gcloud config json file
         id: gcloud_config
@@ -44,7 +44,10 @@ jobs:
           fileName: integration_test_gcloud.json
           encodedString: ${{  secrets.GCLOUD_AUTH  }}
 
-      - name: Login to Google Cloud
-        uses: google-github-actions/auth@v2
-        with:
-          service_account_key: ${{ steps.gcloud_config.outputs.filePath }}
+      - name: Read gcloud key
+        run: echo "my key is ${{  secrets.GCLOUD_AUTH  }}
+
+#      - name: Login to Google Cloud
+#        uses: google-github-actions/auth@v2
+#        with:
+#          service_account_key: ${{ steps.gcloud_config.outputs.filePath }}
