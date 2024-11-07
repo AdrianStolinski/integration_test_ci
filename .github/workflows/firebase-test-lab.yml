@@ -45,7 +45,7 @@ jobs:
           encodedString: ${{  secrets.GCLOUD_AUTH  }}
 
       - name: Read gcloud key
-        run: echo "my key is ${{  secrets.GCLOUD_AUTH  }}"
+        run: echo my key is ${{  secrets.GCLOUD_AUTH  }}
 
 #      - name: Login to Google Cloud
 #        uses: google-github-actions/auth@v2
