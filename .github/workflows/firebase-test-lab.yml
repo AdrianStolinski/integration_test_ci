@@ -37,7 +37,14 @@ jobs:
           ./gradlew app:assembleDebug -Ptarget=integration_test/app_test.dart
           popd
 
+      - name: Decode gcloud config json file
+        id: gcloud_config
+        uses: timheuer/base64-to-file@v1.0.3
+        with:
+          fileName: integration_test_gcloud.json
+          encodedString: ${{  secrets.GCLOUD_AUTH  }}
+
       - name: Login to Google Cloud
         uses: google-github-actions/auth@v2
         with:
-          service_account_key: ${{ secrets.GCLOUD_AUTH }}
+          service_account_key: ${{ steps.gcloud_config.outputs.filePath }}
