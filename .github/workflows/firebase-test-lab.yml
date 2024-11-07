@@ -36,3 +36,8 @@ jobs:
           ./gradlew app:assembleAndroidTest
           ./gradlew app:assembleDebug -Ptarget=integration_test/app_test.dart
           popd
+
+      - name: Login to Google Cloud
+        uses: google-github-actions/auth@v2
+        with:
+          service_account_key: ${{ secrets.GCLOUD_AUTH }}
