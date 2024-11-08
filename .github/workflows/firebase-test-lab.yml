@@ -1,8 +1,12 @@
 name: Test Lab integration test
 
+#on:
+#  pull_request:
+#    types: [ opened, labeled, unlabeled, synchronize ]
 on:
-  pull_request:
-    types: [ opened, labeled, unlabeled, synchronize ]
+  push:
+    tags:
+      - test
 
 env:
   JAVA_VERSION: 17
@@ -16,26 +20,26 @@ jobs:
       - name: Checkout Project
         uses: actions/checkout@v4
 
-      - name: Configure Flutter
-        uses: subosito/flutter-action@v2
-        with:
-          channel: stable
-          cache: true
-
-      - name: Configure JDK ${{ env.JAVA_VERSION }}
-        uses: actions/setup-java@v4.2.2
-        with:
-          distribution: temurin
-          java-version: ${{ env.JAVA_VERSION }}
-          cache: gradle
-
-      - name: Generate apk for testlab
-        run: |
-          pushd android
-          flutter build apk --debug
-          ./gradlew app:assembleAndroidTest
-          ./gradlew app:assembleDebug -Ptarget=integration_test/app_test.dart
-          popd
+#      - name: Configure Flutter
+#        uses: subosito/flutter-action@v2
+#        with:
+#          channel: stable
+#          cache: true
+#
+#      - name: Configure JDK ${{ env.JAVA_VERSION }}
+#        uses: actions/setup-java@v4.2.2
+#        with:
+#          distribution: temurin
+#          java-version: ${{ env.JAVA_VERSION }}
+#          cache: gradle
+#
+#      - name: Generate apk for testlab
+#        run: |
+#          pushd android
+#          flutter build apk --debug
+#          ./gradlew app:assembleAndroidTest
+#          ./gradlew app:assembleDebug -Ptarget=integration_test/app_test.dart
+#          popd
 
       - name: Decode gcloud config json file
         id: gcloud_config
@@ -71,14 +75,14 @@ jobs:
 #      - name: Available devices
 #        run: gcloud firebase test android models list
 
-      - name: Set up Firebase project
-        run: gcloud --quiet config set project ${{ secrets.FIREBASE_PROJECT_ID }}
-
-      - name: Run Instrumentation Tests in Firebase Test Lab
-        run: |
-          gcloud firebase test android run --type instrumentation \
-          --app "build/app/outputs/apk/debug/app-debug.apk" \
-          --test "build/app/outputs/apk/androidTest/debug/app-debug-androidTest.apk" \
-          --device model=Pixel3,version=30,locale=pl,orientation=portrait \
-          --timeout 10m \
+#      - name: Set up Firebase project
+#        run: gcloud --quiet config set project ${{ secrets.FIREBASE_PROJECT_ID }}
+#
+#      - name: Run Instrumentation Tests in Firebase Test Lab
+#        run: |
+#          gcloud firebase test android run --type instrumentation \
+#          --app "build/app/outputs/apk/debug/app-debug.apk" \
+#          --test "build/app/outputs/apk/androidTest/debug/app-debug-androidTest.apk" \
+#          --device model=Pixel3,version=30,locale=pl,orientation=portrait \
+#          --timeout 10m \
 
