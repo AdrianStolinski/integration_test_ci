@@ -1,0 +1,88 @@
+name: Test Lab integration test
+
+#on:
+#  pull_request:
+#    types: [ opened, labeled, unlabeled, synchronize ]
+on:
+  push:
+    tags:
+      - test
+
+env:
+  JAVA_VERSION: 17
+
+jobs:
+  integrationTest:
+    name: Integration Test
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout Project
+        uses: actions/checkout@v4
+
+#      - name: Configure Flutter
+#        uses: subosito/flutter-action@v2
+#        with:
+#          channel: stable
+#          cache: true
+#
+#      - name: Configure JDK ${{ env.JAVA_VERSION }}
+#        uses: actions/setup-java@v4.2.2
+#        with:
+#          distribution: temurin
+#          java-version: ${{ env.JAVA_VERSION }}
+#          cache: gradle
+#
+#      - name: Generate apk for testlab
+#        run: |
+#          pushd android
+#          flutter build apk --debug
+#          ./gradlew app:assembleAndroidTest
+#          ./gradlew app:assembleDebug -Ptarget=integration_test/app_test.dart
+#          popd
+
+      - name: Decode gcloud config json file
+        id: gcloud_config
+        uses: timheuer/base64-to-file@v1.0.3
+        with:
+          fileName: integration_test_gcloud.json
+          encodedString: ${{  secrets.GCLOUD_AUTH  }}
+
+      - name: json
+        id: json_properties
+        uses: ActionsTools/read-json-action@main
+        with:
+          file_path: ${{ steps.gcloud_config.outputs.filePath }}
+
+      - name: print json
+        run: |
+          echo ${{steps.json_properties.outputs.type}}
+          echo ${{steps.json_properties.outputs.project_id}}
+          echo ${{steps.json_properties.outputs.private_key_id}}
+          echo ${{steps.json_properties.outputs.client_email}}
+          echo ${{steps.json_properties.outputs.client_id}}
+          echo ${{steps.json_properties.outputs.auth_uri}}
+          echo ${{steps.json_properties.outputs.token_uri}}
+          echo ${{steps.json_properties.outputs.auth_provider_x509_cert_url}}
+
+      - name: Read gcloud key
+        run: echo my key is ${{  steps.gcloud_config.outputs.filePath  }}
+
+      - name: Login to Google Cloud
+        run: gcloud auth activate-service-account --key-file=${{  steps.gcloud_config.outputs.filePath  }}
+
+#        Komenda pozwalająca sprawdzić listę dostępnych urządzeń z Google Cloud CLI
+#      - name: Available devices
+#        run: gcloud firebase test android models list
+
+#      - name: Set up Firebase project
+#        run: gcloud --quiet config set project ${{ secrets.FIREBASE_PROJECT_ID }}
+#
+#      - name: Run Instrumentation Tests in Firebase Test Lab
+#        run: |
+#          gcloud firebase test android run --type instrumentation \
+#          --app "build/app/outputs/apk/debug/app-debug.apk" \
+#          --test "build/app/outputs/apk/androidTest/debug/app-debug-androidTest.apk" \
+#          --device model=Pixel3,version=30,locale=pl,orientation=portrait \
+#          --timeout 10m \
+
