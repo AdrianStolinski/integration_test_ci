@@ -55,7 +55,6 @@ jobs:
           echo ${{steps.json_properties.outputs.type}}
           echo ${{steps.json_properties.outputs.project_id}}
           echo ${{steps.json_properties.outputs.private_key_id}}
-          echo ${{steps.json_properties.outputs.private_key}}
           echo ${{steps.json_properties.outputs.client_email}}
           echo ${{steps.json_properties.outputs.client_id}}
           echo ${{steps.json_properties.outputs.auth_uri}}
