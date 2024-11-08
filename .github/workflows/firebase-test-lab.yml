@@ -64,6 +64,10 @@ jobs:
       - name: Read gcloud key
         run: echo my key is ${{  steps.gcloud_config.outputs.filePath  }}
 
+      - name: Login to Google Cloud
+        run: |
+          gcloud auth activate-service-account --key-file=${{  steps.gcloud_config.outputs.filePath  }}
+
 #      - name: Login to Google Cloud
 #        uses: google-github-actions/auth@v2
 #        with:
