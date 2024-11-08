@@ -44,10 +44,20 @@ jobs:
           fileName: integration_test_gcloud.json
           encodedString: ${{  secrets.GCLOUD_AUTH  }}
 
-#      - name: Read gcloud key
-#        run: echo my key is ${{  steps.gcloud_config.outputs.filePath  }}
-
-      - name: Login to Google Cloud
-        uses: google-github-actions/auth@v2
+      - name: json
+        id: json_properties
+        uses: ActionsTools/read-json-action@main
         with:
-          credentials_json: ${{ steps.gcloud_config.outputs.filePath }}
+          file_path: steps.gcloud_config.outputs.filePath
+
+      - name: print json
+        run: |
+          echo ${{steps.json_properties.outputs}}
+
+      - name: Read gcloud key
+        run: echo my key is ${{  steps.gcloud_config.outputs.filePath  }}
+
+#      - name: Login to Google Cloud
+#        uses: google-github-actions/auth@v2
+#        with:
+#          credentials_json: ${{ steps.gcloud_config.outputs.filePath }}
