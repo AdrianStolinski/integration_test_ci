@@ -48,7 +48,7 @@ jobs:
         id: json_properties
         uses: ActionsTools/read-json-action@main
         with:
-          file_path: {{ $steps.gcloud_config.outputs.filePath }}
+          file_path: ${{ steps.gcloud_config.outputs.filePath }}
 
       - name: print json
         run: |
