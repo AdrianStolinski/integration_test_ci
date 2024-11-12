@@ -20,26 +20,26 @@ jobs:
       - name: Checkout Project
         uses: actions/checkout@v4
 
-#      - name: Configure Flutter
-#        uses: subosito/flutter-action@v2
-#        with:
-#          channel: stable
-#          cache: true
-#
-#      - name: Configure JDK ${{ env.JAVA_VERSION }}
-#        uses: actions/setup-java@v4.2.2
-#        with:
-#          distribution: temurin
-#          java-version: ${{ env.JAVA_VERSION }}
-#          cache: gradle
-#
-#      - name: Generate apk for testlab
-#        run: |
-#          pushd android
-#          flutter build apk --debug
-#          ./gradlew app:assembleAndroidTest
-#          ./gradlew app:assembleDebug -Ptarget=integration_test/app_test.dart
-#          popd
+      - name: Configure Flutter
+        uses: subosito/flutter-action@v2
+        with:
+          channel: stable
+          cache: true
+      #
+      #      - name: Configure JDK ${{ env.JAVA_VERSION }}
+      #        uses: actions/setup-java@v4.2.2
+      #        with:
+      #          distribution: temurin
+      #          java-version: ${{ env.JAVA_VERSION }}
+      #          cache: gradle
+      #
+      #      - name: Generate apk for testlab
+      #        run: |
+      #          pushd android
+      #          flutter build apk --debug
+      #          ./gradlew app:assembleAndroidTest
+      #          ./gradlew app:assembleDebug -Ptarget=integration_test/app_test.dart
+      #          popd
 
       - name: Decode gcloud config json file
         id: gcloud_config
@@ -71,16 +71,41 @@ jobs:
       - name: Login to Google Cloud
         run: gcloud auth activate-service-account --key-file=${{  steps.gcloud_config.outputs.filePath  }}
 
-#        Komenda pozwalająca sprawdzić listę dostępnych urządzeń Android z Google Cloud CLI
-#      - name: Available Android devices
-#        run: gcloud firebase test android models list
+      #        Komenda pozwalająca sprawdzić listę dostępnych urządzeń Android z Google Cloud CLI
+      #      - name: Available Android devices
+      #        run: gcloud firebase test android models list
 
-#        Komenda pozwalająca sprawdzić listę dostępnych urządzeń iOS z Google Cloud CLI
-      - name: Available iOS devices
-        run: gcloud firebase test ios models list
+      #        Komenda pozwalająca sprawdzić listę dostępnych urządzeń iOS z Google Cloud CLI
+      #      - name: Available iOS devices
+      #        run: gcloud firebase test ios models list
 
-#      - name: Set up Firebase project
-#        run: gcloud --quiet config set project ${{ secrets.FIREBASE_PROJECT_ID }}
+      - name: Set up Firebase project
+        run: gcloud --quiet config set project ${{ secrets.FIREBASE_PROJECT_ID }}
+
+      - name: iOS
+        run: |
+          output="../build/ios_integ"
+          product="ios/build/ios_integ/Build/Products"
+          flutter clean
+          flutter build ios integration_test/login_logout_test.dart --release
+          pushd ios
+          xcodebuild build-for-testing \
+           -workspace Runner.xcworkspace \
+           -scheme Runner \
+           -xcconfig Flutter/Release.xcconfig \
+           -configuration Release \
+           -derivedDataPath \
+           $output -sdk iphoneos
+          popd
+          pushd $product
+          find . -name "Runner_*.xctestrun" -exec zip -r --must-match "ios_tests.zip" "Release-iphoneos" {} +
+          popd
+
+      - name: Upload iOS to Firebase Test Lab
+        run: |
+          gcloud firebase test ios run \
+            --test "build/ios_integ/Build/Products/ios_tests.zip" \
+            --device model=iphone13pro,version=16.6,locale=pl_PL,orientation=portrait
 #
 #      - name: Run Instrumentation Tests in Firebase Test Lab
 #        run: |
@@ -89,4 +114,3 @@ jobs:
 #          --test "build/app/outputs/apk/androidTest/debug/app-debug-androidTest.apk" \
 #          --device model=Pixel3,version=30,locale=pl,orientation=portrait \
 #          --timeout 10m \
-
