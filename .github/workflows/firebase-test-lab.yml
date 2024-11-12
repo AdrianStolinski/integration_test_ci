@@ -14,7 +14,8 @@ env:
 jobs:
   integrationTest:
     name: Integration Test
-    runs-on: ubuntu-latest
+#    runs-on: ubuntu-latest
+    runs-on: macos-latest
 
     steps:
       - name: Checkout Project
