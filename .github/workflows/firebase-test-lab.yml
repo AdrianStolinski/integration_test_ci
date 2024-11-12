@@ -1,12 +1,12 @@
 name: Test Lab integration test
 
-#on:
-#  pull_request:
-#    types: [ opened, labeled, unlabeled, synchronize ]
 on:
-  push:
-    tags:
-      - test
+  pull_request:
+    types: [ opened, labeled, unlabeled, synchronize ]
+#on:
+#  push:
+#    tags:
+#      - test
 
 env:
   JAVA_VERSION: 17
@@ -71,9 +71,13 @@ jobs:
       - name: Login to Google Cloud
         run: gcloud auth activate-service-account --key-file=${{  steps.gcloud_config.outputs.filePath  }}
 
-#        Komenda pozwalająca sprawdzić listę dostępnych urządzeń z Google Cloud CLI
-#      - name: Available devices
+#        Komenda pozwalająca sprawdzić listę dostępnych urządzeń Android z Google Cloud CLI
+#      - name: Available Android devices
 #        run: gcloud firebase test android models list
+
+#        Komenda pozwalająca sprawdzić listę dostępnych urządzeń iOS z Google Cloud CLI
+      - name: Available iOS devices
+        run: gcloud firebase test ios models list
 
 #      - name: Set up Firebase project
 #        run: gcloud --quiet config set project ${{ secrets.FIREBASE_PROJECT_ID }}
