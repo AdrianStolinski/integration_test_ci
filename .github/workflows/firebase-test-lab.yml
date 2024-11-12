@@ -65,11 +65,11 @@ jobs:
           echo ${{steps.json_properties.outputs.token_uri}}
           echo ${{steps.json_properties.outputs.auth_provider_x509_cert_url}}
 
-#      - name: Read gcloud key
-#        run: echo my key is ${{  steps.gcloud_config.outputs.filePath  }}
-#
-#      - name: Login to Google Cloud
-#        run: gcloud auth activate-service-account --key-file=${{  steps.gcloud_config.outputs.filePath  }}
+      - name: Read gcloud key
+        run: echo my key is ${{  steps.gcloud_config.outputs.filePath  }}
+
+      - name: Login to Google Cloud
+        run: gcloud auth activate-service-account --key-file=${{  steps.gcloud_config.outputs.filePath  }}
 
 #        Komenda pozwalająca sprawdzić listę dostępnych urządzeń Android z Google Cloud CLI
 #      - name: Available Android devices
