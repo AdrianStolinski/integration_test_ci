@@ -1,12 +1,12 @@
 name: Test Lab integration test
 
-#on:
-#  pull_request:
-#    types: [ opened, labeled, unlabeled, synchronize ]
 on:
-  push:
-    tags:
-      - test
+  pull_request:
+    types: [ opened, labeled, unlabeled, synchronize ]
+#on:
+#  push:
+#    tags:
+#      - test
 
 env:
   JAVA_VERSION: 17
@@ -54,6 +54,18 @@ jobs:
         with:
           file_path: ${{ steps.gcloud_config.outputs.filePath }}
 
+      - name: Login to Google Cloud
+        id: auth
+        uses: google-github-actions/auth@v2
+        with:
+          credentials_json: ${{ steps.gcloud_config.outputs.filePath }}
+
+      - name: Set up Cloud SDK
+        uses: google-github-actions/setup-gcloud@v2
+
+      - name: Use gcloud CLI
+        run: gcloud info
+
       - name: print json
         run: |
           echo ${{steps.json_properties.outputs.type}}
@@ -68,8 +80,8 @@ jobs:
       - name: Read gcloud key
         run: echo my key is ${{  steps.gcloud_config.outputs.filePath  }}
 
-      - name: Login to Google Cloud
-        run: gcloud auth activate-service-account --key-file=${{  steps.gcloud_config.outputs.filePath  }}
+#      - name: Login to Google Cloud
+#        run: gcloud auth activate-service-account --key-file=${{  steps.gcloud_config.outputs.filePath  }}
 
       #        Komenda pozwalająca sprawdzić listę dostępnych urządzeń Android z Google Cloud CLI
       #      - name: Available Android devices
@@ -79,33 +91,33 @@ jobs:
       #      - name: Available iOS devices
       #        run: gcloud firebase test ios models list
 
-      - name: Set up Firebase project
-        run: gcloud --quiet config set project ${{ secrets.FIREBASE_PROJECT_ID }}
-
-      - name: iOS
-        run: |
-          output="../build/ios_integ"
-          product="ios/build/ios_integ/Build/Products"
-          flutter clean
-          flutter build ios integration_test/login_logout_test.dart --release
-          pushd ios
-          xcodebuild build-for-testing \
-           -workspace Runner.xcworkspace \
-           -scheme Runner \
-           -xcconfig Flutter/Release.xcconfig \
-           -configuration Release \
-           -derivedDataPath \
-           $output -sdk iphoneos
-          popd
-          pushd $product
-          find . -name "Runner_*.xctestrun" -exec zip -r --must-match "ios_tests.zip" "Release-iphoneos" {} +
-          popd
-
-      - name: Upload iOS to Firebase Test Lab
-        run: |
-          gcloud firebase test ios run \
-            --test "build/ios_integ/Build/Products/ios_tests.zip" \
-            --device model=iphone13pro,version=16.6,locale=pl_PL,orientation=portrait
+#      - name: Set up Firebase project
+#        run: gcloud --quiet config set project ${{ secrets.FIREBASE_PROJECT_ID }}
+#
+#      - name: iOS
+#        run: |
+#          output="../build/ios_integ"
+#          product="ios/build/ios_integ/Build/Products"
+#          flutter clean
+#          flutter build ios integration_test/login_logout_test.dart --release
+#          pushd ios
+#          xcodebuild build-for-testing \
+#           -workspace Runner.xcworkspace \
+#           -scheme Runner \
+#           -xcconfig Flutter/Release.xcconfig \
+#           -configuration Release \
+#           -derivedDataPath \
+#           $output -sdk iphoneos
+#          popd
+#          pushd $product
+#          find . -name "Runner_*.xctestrun" -exec zip -r --must-match "ios_tests.zip" "Release-iphoneos" {} +
+#          popd
+#
+#      - name: Upload iOS to Firebase Test Lab
+#        run: |
+#          gcloud firebase test ios run \
+#            --test "build/ios_integ/Build/Products/ios_tests.zip" \
+#            --device model=iphone13pro,version=16.6,locale=pl_PL,orientation=portrait
 #
 #      - name: Run Instrumentation Tests in Firebase Test Lab
 #        run: |
